@@ -1,6 +1,7 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "main.cpp"
+
  string FilePath;
  string OriginalData;
 MainWindow::MainWindow(QWidget *parent)
@@ -82,26 +83,36 @@ void MainWindow::on_pushButton_3_clicked()   //JSON
 void MainWindow::on_pushButton_4_clicked()   //Minify
 
 {
-
+    vector <string> v = ReadFromFile(FilePath);
+        string minifystring = minifying(v);
+        QString text = QString::fromStdString(minifystring);
+        ui->plainTextEdit->setPlainText(text);
 }
 
 
-vector <int> v = compress(FilePath);
+
 void MainWindow::on_pushButton_5_clicked()   //Compress
 {
-
+    vector <int> v = compress(FilePath);
         string xx = xmltostring(FilePath);
-        savingcompressfile(xx , v , FilePath);
+        string xmll = "xmlcompressed.xml";
+            string newfilepath =  FilePath.substr(0, FilePath.find_last_of("/")+1)+xmll;
+
+        savingcompressfile(xx , v , FilePath );
+       string compress = vectortostring(ReadFromFile(newfilepath));
+            QString text = QString::fromStdString(compress);
+            ui->plainTextEdit->setPlainText(text);
+
+
 }
 
 
 void MainWindow::on_pushButton_6_clicked()  //Decompress
 {
+     vector <int> v = compress(FilePath);
     string s = decompress(v);
-        ofstream fillle;
-        fillle.open(FilePath);
-        fillle << s;
-        fillle.close();
+    QString text = QString::fromStdString(s);
+        ui->plainTextEdit->setPlainText(text);
 }
 
 
@@ -134,3 +145,26 @@ void MainWindow::on_pushButton_7_clicked()  //Correct
         }
 
 }
+
+
+
+void MainWindow::on_pushButton_8_clicked()   // consistency
+{
+    vector <string> file = ReadFromFile(FilePath);
+        if (check_consistency(file) == 1)
+        {
+
+            QString text = QString::fromStdString("The file is balanced ");
+            ui->plainTextEdit->setPlainText(text);
+        }
+        else
+        {
+            QString text = QString::fromStdString("ERROR! the file is not balanced use correct button");
+            ui->plainTextEdit->setPlainText(text);
+        }
+}
+
+
+
+
+
