@@ -2,6 +2,7 @@
 #include "ui_mainwindow.h"
 #include "main.cpp"
 
+
  string FilePath;
  string OriginalData;
 MainWindow::MainWindow(QWidget *parent)
@@ -63,21 +64,18 @@ void MainWindow::on_pushButton_3_clicked()   //JSON
 {
 
     vector <string> file_lines = xml_cutter(FilePath);
+
         vector <string> file_lines_without_comments;
         FileWithoutComments(file_lines_without_comments, file_lines);
         file_lines = file_lines_without_comments;
+
         vector <Node*> nodes;
-        stack <int> tags;
         xml_tree tree;
-        xml_tree_implemetation(file_lines, nodes, tree, tags);
-        vector <string> XML_Json;
-        int x = 0;
-        stack <int> tabs;
-        string json = "{\n";
-        XML_json(json, tree, tree.get_root(), x, 0, 0, 0);
-        string ss = json;
-            QString text = QString::fromStdString(ss);
-            ui->plainTextEdit->setPlainText(text);
+        stack <int> tags;
+        xml_tree_implemetation(file_lines, nodes ,tree , tags);
+        string ss = xml_to_json(tree);
+        QString text = QString::fromStdString(ss);
+        ui->plainTextEdit->setPlainText(text);
 }
 
 void MainWindow::on_pushButton_4_clicked()   //Minify
@@ -167,4 +165,15 @@ void MainWindow::on_pushButton_8_clicked()   // consistency
 
 
 
+
+
+void MainWindow::on_pushButton_9_clicked()  //to show graph
+{
+    XMLTree tree(OriginalData);
+    SocialGraph Graph(tree);
+    Graphfile(Graph);
+    system("dot -Tpng -O graph.dot");
+    QPixmap p("graph.dot.png");
+    ui->label->setPixmap(p);
+}
 
