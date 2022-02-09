@@ -35,250 +35,257 @@ string tab(int n)
 	return s;
 }
 
-void XML_json(string &json , xml_tree tree, Node* temp_ptr, int& x, bool firstrepeated, bool inbetweenrepeated, bool lastrepeated)
+
+vector <int> sortchildren(vector<Node*> &children)
+{ 
+	vector <int> repeated;
+	Node* temp_ptr;
+	string temp;
+
+	for (int i = 0; i < children.size()-1; i++)
+	{
+		for (int j = i + 1; j < children.size(); j++) {
+			if ((children[j]->tag_name) < (children[i]->tag_name))
+			{
+				temp_ptr = children[j];
+				children[j] = children[i];
+				children[i] = temp_ptr;
+			}
+		}
+	}
+	if (children.size() > 0) {
+		temp = children[0]->tag_name;
+		repeated.push_back(1);
+		int j = 0;
+		for (int i = 1; i < children.size(); i++) {
+			if ((children[i]->tag_name) == temp) {
+				repeated[j]++;
+			}
+			else
+			{
+				repeated.push_back(1);
+				j++;
+				temp = children[i]->tag_name;
+			}
+		}
+
+	}
+	return repeated;
+}
+
+vector <int> firstrepeats(vector <int> repeated)
+{
+	vector <int> first_repeats;
+	for (int i = 0; i < repeated.size(); i++)
+	{
+		if (repeated[i] == 1)
+		{
+			first_repeats.push_back(0);
+		}
+		else
+		{
+			first_repeats.push_back(1);
+			for (int j = 0; j < repeated[i] - 1; j++)
+			{
+				first_repeats.push_back(0);
+			}
+		}
+	}
+
+	return first_repeats;
+}
+
+
+vector <int> isrepeated(vector <int> repeated)
+{
+	vector <int> isrepeated;
+	for (int i = 0; i < repeated.size(); i++)
+	{
+		if (repeated[i] == 1)
+		{
+			isrepeated.push_back(1);
+		}
+		else
+		{
+			for (int j = 0; j < repeated[i]; j++)
+			{
+				isrepeated.push_back(repeated[i]);
+			}
+		}
+	}
+
+	return isrepeated;
+}
+
+
+void print_node(Node* node_ptr, int& tab,string& json ,int repeated ) 
 {
 
-
-	// has attr  and has data
-	if (temp_ptr->att != "" && temp_ptr->data != "")
+	if (repeated == 1)
 	{
-		x++;
-		
-
-		json = json + tab(x) + "\"" + tree.get_tag(temp_ptr) + "\": {" + "\n";
-		vector <string> attr = split(temp_ptr->att, " ");
-		for (auto it = attr.begin(); it != attr.end(); /* NOTHING */)
+		if (node_ptr->children.size())
 		{
-			if ((*it).find('=') == -1)
-				it = attr.erase(it);
-			else
-				++it;
-		}
-
-		x++;
-
-		for (int i = 0; i < attr.size(); i++)
-		{
-			json = json + tab(x) + "\"@" + split(attr[i], "=")[0] + "\": " + split(attr[i], "=")[1] + "," + "\n";
-		}
-		json = json + tab(x);
-		if (is_digits(temp_ptr->data))
-		{
-			json = json + temp_ptr->data;
-		}
-		else
-		{
-			json = json + "\"" + temp_ptr->data + "\"";
-		}
-		json = json + "\n";
-		x--;
-		json = json + tab(x) + "}";
-		vector < Node*> v = tree.get_children(temp_ptr->Parent);
-		sort_children(v);
-		if (temp_ptr == v[v.size() - 1])
-		{
-			json = json + "\n";
-		}
-		else
-		{
-			json = json + "," + "\n";
-		}
-		vector <Node*>w = tree.get_children(temp_ptr->Parent);
-		sort_children(w);
-		if (temp_ptr == w[w.size()-1])
-		{
-			x--;
-		}
-
-
-	}
-	//has data only
-	else if (temp_ptr->data != "" && temp_ptr->att == "")
-	{
-		
-		if (temp_ptr->Parent->att != "")
-		{
-			x--;
-
-		}
-		x++;
-		json = json + tab(x) + "\"" + temp_ptr->tag_name + "\": ";
-		if (is_digits(temp_ptr->data))
-		{
-			json = json + temp_ptr->data;
-		}
-		else
-		{
-			json = json + "\"" + temp_ptr->data + "\"";
-		}
-		vector < Node*> v = tree.get_children(temp_ptr->Parent);
-		sort_children(v);
-		if (temp_ptr == v[v.size() - 1])
-		{
-			json = json + "\n";
-		}
-		else
-		{
-			json = json + "," + "\n";
-		}
-	}
-	// has attr only and dont have any child or data
-	else if (temp_ptr->att != "" && temp_ptr->data == "" && !tree.have_children(temp_ptr))
-	{
-		x++;
-		json = json + tab(x) + "\"" + tree.get_tag(temp_ptr) + "\": {" + "\n";
-		vector <string> attr = split(temp_ptr->att, " ");
-		x++;
-
-		for (int i = 0; i < attr.size(); i++)
-		{
-			json = json + tab(x) + "\"@" + split(attr[i], "=")[0] + "\": " + split(attr[i], "=")[1];
-			if (i = attr.size() - 1)
+			for (int i = 0; i < tab; i++)
 			{
-				json = json + "\n";
+				json += "  ";
 			}
-			else
-			{
-				json = json + ","  + "\n";
-			}
-		}
-		x--;
-		json = json + tab(x) + "}";
-		vector < Node*> v = tree.get_children(temp_ptr->Parent);
-		sort_children(v);
-		if (temp_ptr == v[v.size() - 1])
-		{
-			json = json  + "\n";
-		}
-		else
-		{
-			json = json + "," + "\n";
-		}
-		vector <Node*> w = tree.get_children(temp_ptr->Parent);
-		sort_children(w);
-		if (temp_ptr == w[w.size() - 1])
-		{
-			x--;
-		}
-	}
-	// have children 
-	else if (tree.have_children(temp_ptr))
-	{
-		if (temp_ptr != tree.get_root())
-		{
-			vector < Node*> w = tree.get_children(temp_ptr->Parent);
-			sort_children(w);
-			if (temp_ptr == w[w.size()-1])
-			{
-				x--;
-			}
-		}
-		else
-		{
-			x++;
-		}
-		x++;
-		json = json + tab(x) + "\"" + tree.get_tag(temp_ptr) + "\": {"  + "\n";
-
-		if (temp_ptr->att != "")
-		{
-
-			vector <string> attr = split(temp_ptr->att, " ");
-			x++;
-			for (int i = 0; i < attr.size(); i++)
-			{
-				json = json + tab(x) + "\"@" + split(attr[i], "=")[0] + "\": " + split(attr[i], "=")[1] + "," +"\n";
-			}
-
-		}
-
-		vector < Node*> n = tree.get_children(temp_ptr);
-		sort_children(n);
-		for (int i = 0; i < n.size(); i++)
-		{
+			json += "\"" + node_ptr->tag_name + "\": {\n";
+			tab++;
 			
-			if (i > 0 && i != n.size() - 1)
+			for (int i = 0; i < tab; i++)
 			{
-				if (n[i]->tag_name != n[i - 1]->tag_name && n[i]->tag_name != n[i + 1]->tag_name)
-				{
-					if (n[i]->att != "")
-					{
-						x--;
+				json += "  ";
 
-					}
-					XML_json(json, tree, n[i], x, 0, 0, 0);
+			}
+			vector <int> rep = sortchildren(node_ptr->children);
+			vector <int> isrep = isrepeated(rep);
+			vector <int> fistrepeated = firstrepeats(rep);
+			for (int i = 0; i < node_ptr->children.size(); i++)
+			{
+				if ( !fistrepeated[i]  && isrep[i] > 1 && !node_ptr->children[i]->children.size())
+				{
+					continue;
+				}
+				print_node(node_ptr->children[i], tab, json, isrep[i]);
+			}
+			tab--;
+			for (int i = 0; i < tab; i++)
+			{
+				json += "  ";
 
-				}
-				else if (n[i]->tag_name != n[i - 1]->tag_name && n[i]->tag_name == n[i + 1]->tag_name)
+			}
+			json += "}\n";
+
+		}
+		else
+		{
+
+			vector<int> repeated = sortchildren(node_ptr->Parent->children);
+			for (int i = 0; i < tab; i++)
+			{
+				json += "  ";
+			}
+			json += "\"" + node_ptr->tag_name + "\": " + "\"" + node_ptr->data +"\"";
+			if (node_ptr != node_ptr->Parent->children[node_ptr->Parent->children.size()-1])
+			{
+				json += ",\n";
+				for (int i = 0; i < tab; i++)
 				{
-					if (n[i]->att != "")
-					{
-						x--;
-					}
-					XML_json(json, tree, n[i], x, 1, 0, 0);
-				}
-				else if (n[i]->tag_name == n[i - 1]->tag_name && n[i]->tag_name != n[i + 1]->tag_name)
-				{
-					if (n[i]->att != "")
-					{
-						x--;
-					}
-					XML_json(json, tree, n[i], x, 0, 0, 1);
-				}
-				else if (n[i]->tag_name == n[i - 1]->tag_name && n[i]->tag_name == n[i + 1]->tag_name)
-				{
-					if (n[i]->att != "")
-					{
-						x--;
-					}
-					XML_json(json, tree, n[i], x, 0, 1, 0);
+					json += "  ";
 				}
 			}
-			else if (i == n.size() - 1)
+			else
 			{
-				if (n[i]->tag_name == n[i - 1]->tag_name)
+				tab--;
+				json += "\n";
+				for (int i = 0; i < tab; i++)
 				{
-					if (n[i]->att != "")
+					json += "  ";
+				}
+				json += " }\n";
+
+
+
+			}
+			
+		}
+		
+	}
+
+	if (repeated > 1) 
+	{
+		vector <int> repeatedd = sortchildren(node_ptr->Parent->children);
+		vector <int> fistrepeated = firstrepeats(repeatedd);
+		int num;
+		for (int j = 0; j < node_ptr->Parent->children.size(); j++)
+		{
+			if (node_ptr == node_ptr->Parent->children[j])
+			{
+				num = j;
+			}
+		}
+		if (fistrepeated[num])
+		{
+			json += "\"" + node_ptr->tag_name + "\": [\n";
+		}
+		tab++;
+		for (int i = 0; i <tab; i++)
+		{
+			json += "  ";
+		}
+
+		if (node_ptr->children.size())
+		{
+			json += " {\n";
+			tab++;
+			vector <int> rep = sortchildren(node_ptr->children);
+			vector <int> isrep = isrepeated(rep);
+			for (int i = 0; i < node_ptr->children.size(); i++)
+			{
+				print_node(node_ptr->children[i], tab, json, isrep[i]);
+				if (i != node_ptr->children.size() -1)
+				{
+					json += ",";
+				}
+				json += "\n";
+			}
+			
+			if (!fistrepeated[num])
+			{
+				for (int i = 0; i < tab; i++)
+				{
+					json += "  ";
+				}
+				json += "]\n";
+			}
+			
+
+			tab--;
+		}
+
+		else
+		{
+			vector <int> isrep = isrepeated(repeatedd);
+			for (int i = 0; i < isrep[num]; i++)
+			{
+				json += node_ptr->Parent->children[num+i]->data;
+				if (i != isrep[num]-1)
+				{
+					json += ",\n";
+					for (int k = 0; k < tab; k++)
 					{
-						x--;
+						json += "  ";
 					}
-					XML_json(json, tree, n[i],x , 0, 0, 1);
-					json = json + tab(x--) + "}"  +  "\n";
-					x++;
+
 				}
 				else
 				{
-					if (n[i]->att != "")
+					json += "\n";
+					tab--;
+					for (int k = 0; k < tab; k++)
 					{
-						x--;
+						json += "  ";
 					}
-					XML_json(json, tree, n[i], x, 0, 0, 1);
-					json = json + tab(x--) + "}" + "\n";
-					x++;
-				}
-			}
-			else if (i == 0)
-			{
-				if (n[i]->tag_name == n[i + 1]->tag_name)
-				{
-					if (n[i]->att != "")
+					json += "]\n";
+					for (int k = 0; k < tab; k++)
 					{
-						x--;
+						json += "  ";
 					}
-					XML_json(json, tree, n[i], x, 1, 0, 0);
-				}
-				else if (n[i]->tag_name != n[i + 1]->tag_name)
-				{
-					if (n[i]->att != "")
-					{
-						x--;
-
-					}
-					XML_json(json, tree, n[i], x, 0, 0, 0);
 				}
 			}
 		}
-	}
-
-
+	}	
 }
+
+
+string xml_to_json(xml_tree tree) {
+
+	string  json = "";
+	int tab = 1;
+	json += "{\n" ;
+	print_node(tree.get_root(), tab ,json , 1);
+	json+="\n";
+	json += "}\n" ;
+	return json;
+}
+

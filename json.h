@@ -15,7 +15,11 @@ using namespace std;
 bool is_digits(const std::string& str);
 vector <string> split(string s, string delimiter);
 string tab(int n);
-void XML_json(string &json, xml_tree tree, Node* temp_ptr, int& x, bool firstrepeated, bool inbetweenrepeated, bool lastrepeated);
+void print_node(Node* node_ptr, int& tab, string& json, int repeated);
+vector <int> sortchildren(vector<Node*>& children);
+vector <int> firstrepeats(vector <int> repeated);
+vector <int> isrepeated(vector <int> repeated);
+string xml_to_json(xml_tree tree);
 
 
 #endif
